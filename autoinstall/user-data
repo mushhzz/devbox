@@ -1,0 +1,96 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+
+  # Automatically select the largest disk
+  storage:
+    layout:
+      name: lvm
+      sizing-policy: all
+
+  # Network: use DHCP on first interface
+  network:
+    version: 2
+    ethernets:
+      id0:
+        match:
+          name: en*
+        dhcp4: true
+      id1:
+        match:
+          name: eth*
+        dhcp4: true
+
+  # Default user — CHANGE THESE before building the ISO
+  identity:
+    hostname: ubuntu-dev
+    # Default password is "changeme" — change on first login
+    # Generate with: mkpasswd -m sha-512
+    password: "$6$rounds=4096$randomsalt$OwBxKtIW8VDpBFcLiUPvATrYvnLC0hMk8DfuDxNBIAYDl4Yv6Gq1BReRkA0X7aPqXTe1IHWCN68gPq6RmXFp."
+    username: dev
+
+  # Install OpenSSH so Ansible can reach the host if needed
+  ssh:
+    install-server: true
+    allow-pw: true
+
+  # Packages needed for the Ansible bootstrap
+  packages:
+    - git
+    - ansible
+    - curl
+    - gnome-desktop3-data
+
+  # Enable full disk encryption prompt (optional — remove if not wanted)
+  # storage:
+  #   layout:
+  #     name: lvm
+  #     sizing-policy: all
+  #     password: <encryption-passphrase>
+
+  late-commands:
+    # Clone the ansible repo into the target system
+    - curtin in-target --target=/target -- git clone https://github.com/mushhzz/devbox.git /opt/devbox
+
+    # Copy the group_vars template as the active config
+    - curtin in-target --target=/target -- cp /opt/devbox/group_vars/all.yml.example /opt/devbox/group_vars/all.yml
+
+    # Patch group_vars with the install user and enable Intune
+    - curtin in-target --target=/target -- sed -i 's/target_user:.*"CHANGEME"/target_user:\ "dev"/' /opt/devbox/group_vars/all.yml
+    - curtin in-target --target=/target -- sed -i 's|target_user_home:.*|target_user_home:\ "/home/dev"|' /opt/devbox/group_vars/all.yml
+    - curtin in-target --target=/target -- sed -i 's/git_user_name:.*"CHANGEME"/git_user_name:\ "dev"/' /opt/devbox/group_vars/all.yml
+    - curtin in-target --target=/target -- sed -i 's/git_user_email:.*"CHANGEME@example.com"/git_user_email:\ "dev@example.com"/' /opt/devbox/group_vars/all.yml
+    - curtin in-target --target=/target -- sed -i 's/install_intune:.*false/install_intune:\ true/' /opt/devbox/group_vars/all.yml
+
+    # Install required Ansible collections
+    - curtin in-target --target=/target -- ansible-galaxy collection install community.general community.crypto --force-with-deps
+
+    # Run the Ansible playbook (non-interactive, skip become password)
+    - curtin in-target --target=/target -- ansible-playbook /opt/devbox/playbook.yml --connection=local --inventory=localhost, --extra-vars "ansible_become_pass=''" --become
+
+    # Create a first-login script for anything that needs an interactive session
+    - |
+      cat <<'SCRIPT' > /target/etc/profile.d/first-login-setup.sh
+      #!/bin/bash
+      if [ ! -f "$HOME/.devbox-setup-complete" ]; then
+          echo ""
+          echo "=========================================="
+          echo "  First login — completing device setup"
+          echo "=========================================="
+          echo ""
+          echo "To complete Intune enrollment:"
+          echo "  1. Open 'Microsoft Intune' from the app menu"
+          echo "  2. Sign in with your work/school account"
+          echo "  3. Follow the on-screen steps"
+          echo ""
+          echo "To change your password:"
+          echo "  passwd"
+          echo ""
+          touch "$HOME/.devbox-setup-complete"
+      fi
+      SCRIPT
+    - chmod 755 /target/etc/profile.d/first-login-setup.sh
