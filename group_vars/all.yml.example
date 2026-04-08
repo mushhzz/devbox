@@ -57,6 +57,9 @@ install_aws_cli: true
 install_gcloud: true
 install_azure_cli: true
 
+# === Intune ===
+install_intune: false
+
 # === AI Tools ===
 install_claude_code: true
 install_opencode: true

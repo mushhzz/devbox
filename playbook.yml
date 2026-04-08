@@ -28,5 +28,8 @@
       tags: [devtools]
     - role: ai_tools
       tags: [ai_tools]
+    - role: intune
+      tags: [intune]
+      when: install_intune
     - role: flatpak
       tags: [flatpak]
