@@ -10,3 +10,6 @@
 
 - name: Install Python tooling (uv/uvx)
   ansible.builtin.import_tasks: python_uv.yml
+
+- name: Install .NET SDK and tools
+  ansible.builtin.import_tasks: dotnet.yml

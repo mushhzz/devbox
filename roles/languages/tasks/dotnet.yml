@@ -1,0 +1,31 @@
+---
+- name: Install .NET SDK (channel {{ dotnet_channel }})
+  ansible.builtin.shell: >
+    curl -fsSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel {{ dotnet_channel }}
+  args:
+    creates: "{{ target_user_home }}/.dotnet/dotnet"
+
+- name: Install dotnet-ef global tool
+  ansible.builtin.shell: >
+    {{ target_user_home }}/.dotnet/dotnet tool install --global dotnet-ef
+  environment:
+    DOTNET_ROOT: "{{ target_user_home }}/.dotnet"
+    PATH: "{{ target_user_home }}/.dotnet:{{ target_user_home }}/.dotnet/tools:{{ ansible_env.PATH }}"
+  args:
+    creates: "{{ target_user_home }}/.dotnet/tools/dotnet-ef"
+
+- name: Install dotnet-outdated global tool
+  ansible.builtin.shell: >
+    {{ target_user_home }}/.dotnet/dotnet tool install --global dotnet-outdated-tool
+  environment:
+    DOTNET_ROOT: "{{ target_user_home }}/.dotnet"
+    PATH: "{{ target_user_home }}/.dotnet:{{ target_user_home }}/.dotnet/tools:{{ ansible_env.PATH }}"
+  args:
+    creates: "{{ target_user_home }}/.dotnet/tools/dotnet-outdated"
+
+- name: Install Azure Artifacts NuGet credential provider
+  ansible.builtin.shell: >
+    curl -fsSL https://aka.ms/install-artifacts-credprovider.sh | bash
+  args:
+    creates: "{{ target_user_home }}/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft.dll"
+  when: install_nuget_credential_provider
