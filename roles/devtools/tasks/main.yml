@@ -1,0 +1,25 @@
+---
+- name: Install CLI dev tools from DNF
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - tmux
+      - fzf
+      - ripgrep
+      - bat
+      - eza
+      - zoxide
+      - btop
+      - jq
+      - yq
+      - httpie
+    state: present
+
+- name: Install lazygit via go install
+  ansible.builtin.shell: >
+    go install github.com/jesseduffield/lazygit@latest
+  environment:
+    GOPATH: "{{ target_user_home }}/go"
+    PATH: "/usr/bin:{{ target_user_home }}/go/bin:{{ ansible_env.PATH }}"
+  args:
+    creates: "{{ target_user_home }}/go/bin/lazygit"

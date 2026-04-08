@@ -1,0 +1,12 @@
+---
+- name: Install AWS CLI
+  ansible.builtin.import_tasks: aws.yml
+  when: install_aws_cli
+
+- name: Install Google Cloud CLI
+  ansible.builtin.import_tasks: gcloud.yml
+  when: install_gcloud
+
+- name: Install Azure CLI
+  ansible.builtin.import_tasks: azure.yml
+  when: install_azure_cli

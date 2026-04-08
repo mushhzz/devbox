@@ -1,0 +1,45 @@
+---
+- name: Add Docker CE repository
+  become: true
+  ansible.builtin.command:
+    cmd: dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+  when: install_docker
+
+- name: Remove podman-docker conflict package
+  become: true
+  ansible.builtin.dnf:
+    name: podman-docker
+    state: absent
+  when: install_docker
+  ignore_errors: true
+
+- name: Install Docker CE
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  when: install_docker
+  notify: restart docker
+
+- name: Enable and start Docker service
+  become: true
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+  when: install_docker
+
+- name: Add user to docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    groups: docker
+    append: true
+  when: install_docker

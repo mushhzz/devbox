@@ -1,0 +1,68 @@
+---
+- name: Install zsh
+  become: true
+  ansible.builtin.dnf:
+    name: zsh
+    state: present
+
+- name: Set zsh as default shell
+  become: true
+  ansible.builtin.user:
+    name: "{{ target_user }}"
+    shell: /usr/bin/zsh
+
+- name: Install Oh My Zsh
+  ansible.builtin.shell: >
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    "" --unattended
+  args:
+    creates: "{{ target_user_home }}/.oh-my-zsh"
+
+- name: Clone zsh-autosuggestions
+  ansible.builtin.git:
+    repo: https://github.com/zsh-users/zsh-autosuggestions.git
+    dest: "{{ target_user_home }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    depth: 1
+    update: true
+
+- name: Clone zsh-syntax-highlighting
+  ansible.builtin.git:
+    repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
+    dest: "{{ target_user_home }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+    depth: 1
+    update: true
+
+- name: Clone zsh-completions
+  ansible.builtin.git:
+    repo: https://github.com/zsh-users/zsh-completions.git
+    dest: "{{ target_user_home }}/.oh-my-zsh/custom/plugins/zsh-completions"
+    depth: 1
+    update: true
+
+- name: Clone fzf-tab
+  ansible.builtin.git:
+    repo: https://github.com/Aloxaf/fzf-tab.git
+    dest: "{{ target_user_home }}/.oh-my-zsh/custom/plugins/fzf-tab"
+    depth: 1
+    update: true
+
+- name: Clone zsh-history-substring-search
+  ansible.builtin.git:
+    repo: https://github.com/zsh-users/zsh-history-substring-search.git
+    dest: "{{ target_user_home }}/.oh-my-zsh/custom/plugins/zsh-history-substring-search"
+    depth: 1
+    update: true
+
+- name: Clone you-should-use
+  ansible.builtin.git:
+    repo: https://github.com/MichaelAquilina/zsh-you-should-use.git
+    dest: "{{ target_user_home }}/.oh-my-zsh/custom/plugins/you-should-use"
+    depth: 1
+    update: true
+
+- name: Deploy .zshrc
+  ansible.builtin.template:
+    src: zshrc.j2
+    dest: "{{ target_user_home }}/.zshrc"
+    mode: "0644"
+    backup: true

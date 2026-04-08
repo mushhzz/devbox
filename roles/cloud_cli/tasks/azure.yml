@@ -1,0 +1,6 @@
+---
+- name: Install Azure CLI
+  become: true
+  ansible.builtin.dnf:
+    name: azure-cli
+    state: present

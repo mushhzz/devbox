@@ -1,0 +1,6 @@
+---
+- name: Install uv (Python package manager)
+  ansible.builtin.shell: >
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+  args:
+    creates: "{{ target_user_home }}/.local/bin/uv"

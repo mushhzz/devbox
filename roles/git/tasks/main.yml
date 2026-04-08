@@ -1,0 +1,40 @@
+---
+- name: Install git and GitHub CLI
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - git
+      - gh
+    state: present
+
+- name: Deploy .gitconfig
+  ansible.builtin.template:
+    src: gitconfig.j2
+    dest: "{{ target_user_home }}/.gitconfig"
+    mode: "0644"
+    backup: true
+
+- name: Ensure .ssh directory exists
+  ansible.builtin.file:
+    path: "{{ target_user_home }}/.ssh"
+    state: directory
+    mode: "0700"
+
+- name: Generate SSH key
+  ansible.builtin.command:
+    cmd: >
+      ssh-keygen -t {{ ssh_key_type }} -C "{{ ssh_key_comment }}"
+      -f {{ target_user_home }}/.ssh/id_{{ ssh_key_type }} -N ""
+  args:
+    creates: "{{ target_user_home }}/.ssh/id_{{ ssh_key_type }}"
+
+- name: Read SSH public key
+  ansible.builtin.slurp:
+    src: "{{ target_user_home }}/.ssh/id_{{ ssh_key_type }}.pub"
+  register: ssh_pub_key
+
+- name: Display SSH public key
+  ansible.builtin.debug:
+    msg: |
+      === Add this SSH key to GitHub (https://github.com/settings/keys) ===
+      {{ ssh_pub_key.content | b64decode }}

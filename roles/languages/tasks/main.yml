@@ -1,0 +1,12 @@
+---
+- name: Install Node.js via fnm
+  ansible.builtin.import_tasks: node.yml
+
+- name: Install Rust via rustup
+  ansible.builtin.import_tasks: rust.yml
+
+- name: Install Go
+  ansible.builtin.import_tasks: go.yml
+
+- name: Install Python tooling (uv/uvx)
+  ansible.builtin.import_tasks: python_uv.yml

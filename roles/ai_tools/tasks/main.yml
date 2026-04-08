@@ -1,0 +1,14 @@
+---
+- name: Install Claude Code CLI
+  ansible.builtin.shell: >
+    curl -fsSL https://claude.ai/install.sh | bash
+  args:
+    creates: "{{ target_user_home }}/.local/bin/claude"
+  when: install_claude_code
+
+- name: Install OpenCode
+  ansible.builtin.shell: >
+    curl -fsSL https://opencode.ai/install | bash
+  args:
+    creates: "{{ target_user_home }}/.local/bin/opencode"
+  when: install_opencode

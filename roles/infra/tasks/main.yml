@@ -1,0 +1,15 @@
+---
+- name: Install infrastructure tools
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - opentofu
+      - helm
+      - k9s
+    state: present
+
+- name: Install kubectl
+  become: true
+  ansible.builtin.dnf:
+    name: kubernetes-client
+    state: present

@@ -1,0 +1,36 @@
+---
+- name: Enable Ghostty COPR repo
+  become: true
+  ansible.builtin.command:
+    cmd: dnf copr enable -y pgdev/ghostty
+  args:
+    creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:pgdev:ghostty.repo
+  register: ghostty_copr
+  ignore_errors: true
+
+- name: Enable fallback Ghostty COPR repo
+  become: true
+  ansible.builtin.command:
+    cmd: dnf copr enable -y scottames/ghostty
+  args:
+    creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:scottames:ghostty.repo
+  when: ghostty_copr is failed
+
+- name: Install Ghostty
+  become: true
+  ansible.builtin.dnf:
+    name: ghostty
+    state: present
+
+- name: Ensure Ghostty config directory exists
+  ansible.builtin.file:
+    path: "{{ target_user_home }}/.config/ghostty"
+    state: directory
+    mode: "0755"
+
+- name: Deploy Ghostty config
+  ansible.builtin.template:
+    src: ghostty.config.j2
+    dest: "{{ target_user_home }}/.config/ghostty/config"
+    mode: "0644"
+    backup: true

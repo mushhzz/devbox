@@ -1,0 +1,32 @@
+---
+- name: Provision Fedora Asahi Dev Laptop
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become: false
+
+  roles:
+    - role: base
+      tags: [base]
+    - role: shell
+      tags: [shell]
+    - role: terminal
+      tags: [terminal]
+    - role: git
+      tags: [git]
+    - role: editors
+      tags: [editors]
+    - role: languages
+      tags: [languages]
+    - role: containers
+      tags: [containers]
+    - role: infra
+      tags: [infra]
+    - role: cloud_cli
+      tags: [cloud_cli]
+    - role: devtools
+      tags: [devtools]
+    - role: ai_tools
+      tags: [ai_tools]
+    - role: flatpak
+      tags: [flatpak]

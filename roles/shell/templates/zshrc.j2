@@ -1,0 +1,62 @@
+# {{ ansible_managed }}
+export ZSH="$HOME/.oh-my-zsh"
+
+ZSH_THEME="{{ omz_theme }}"
+
+plugins=(
+{% for plugin in omz_plugins %}
+    {{ plugin }}
+{% endfor %}
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# --- Plugin config ---
+
+# history-substring-search: up/down arrows search history by prefix
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+# fzf-tab config
+zstyle ':fzf-tab:*' switch-group '<' '>'
+zstyle ':fzf-tab:*' fzf-min-height 20
+
+# ssh-agent: auto-add keys
+zstyle :omz:plugins:ssh-agent identities id_ed25519
+
+# --- PATH additions ---
+
+# Rust (rustup/cargo)
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+# Go
+export GOPATH="$HOME/go"
+export PATH="$GOPATH/bin:$PATH"
+
+# fnm (Node.js)
+if [ -d "$HOME/.local/share/fnm" ]; then
+    export PATH="$HOME/.local/share/fnm:$PATH"
+    eval "$(fnm env --use-on-cd --shell zsh)"
+fi
+
+# uv / uvx (Python)
+[ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"
+
+# Google Cloud SDK
+if [ -f "$HOME/.local/share/google-cloud-sdk/path.zsh.inc" ]; then
+    source "$HOME/.local/share/google-cloud-sdk/path.zsh.inc"
+    source "$HOME/.local/share/google-cloud-sdk/completion.zsh.inc"
+fi
+
+# --- Tool integrations ---
+
+# zoxide (smart cd)
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+
+# fzf
+command -v fzf &>/dev/null && eval "$(fzf --zsh)"
+
+# --- Aliases ---
+command -v bat &>/dev/null && alias cat="bat --paging=never"
+command -v eza &>/dev/null && alias ls="eza" && alias ll="eza -la" && alias lt="eza --tree"
+command -v btop &>/dev/null && alias top="btop"

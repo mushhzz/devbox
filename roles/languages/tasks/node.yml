@@ -1,0 +1,15 @@
+---
+- name: Install fnm (Fast Node Manager)
+  ansible.builtin.shell: >
+    curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell --install-dir {{ target_user_home }}/.local/share/fnm
+  args:
+    creates: "{{ target_user_home }}/.local/share/fnm/fnm"
+
+- name: Install Node.js LTS via fnm
+  ansible.builtin.shell: >
+    {{ target_user_home }}/.local/share/fnm/fnm install --lts
+  environment:
+    FNM_DIR: "{{ target_user_home }}/.local/share/fnm"
+  when: node_lts
+  register: fnm_install
+  changed_when: "'already installed' not in fnm_install.stderr"

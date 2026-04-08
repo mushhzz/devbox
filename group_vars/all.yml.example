@@ -1,0 +1,62 @@
+---
+# === User Identity (CHANGE THESE) ===
+git_user_name: "CHANGEME"
+git_user_email: "CHANGEME@example.com"
+
+# === System ===
+target_user: "CHANGEME"
+target_user_home: "/home/{{ target_user }}"
+run_system_update: true
+
+# === Shell ===
+omz_theme: "robbyrussell"
+omz_plugins:
+  # External plugins (cloned)
+  - fzf-tab
+  - zsh-autosuggestions
+  - zsh-syntax-highlighting
+  - zsh-completions
+  - zsh-history-substring-search
+  - you-should-use
+  # Built-in OMZ plugins
+  - git
+  - fzf
+  - sudo
+  - extract
+  - colored-man-pages
+  - command-not-found
+  - ssh-agent
+  - dirhistory
+  - aliases
+  # Language/tool completions
+  - kubectl
+  - docker
+  - docker-compose
+  - golang
+  - rust
+  - npm
+  - pip
+  - aws
+  - terraform
+  - gcloud
+  - helm
+
+# === SSH ===
+ssh_key_type: ed25519
+ssh_key_comment: "{{ git_user_email }}"
+
+# === Languages ===
+node_lts: true
+rust_toolchain: stable
+
+# === Containers ===
+install_docker: true
+
+# === Cloud CLIs ===
+install_aws_cli: true
+install_gcloud: true
+install_azure_cli: true
+
+# === AI Tools ===
+install_claude_code: true
+install_opencode: true

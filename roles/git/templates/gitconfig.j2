@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+[user]
+    name = {{ git_user_name }}
+    email = {{ git_user_email }}
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = true
+
+[push]
+    autoSetupRemote = true
+
+[core]
+    editor = nvim
+    autocrlf = input
+
+[diff]
+    colorMoved = default
+
+[merge]
+    conflictstyle = diff3
+
+[rerere]
+    enabled = true
