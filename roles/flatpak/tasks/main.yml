@@ -22,3 +22,5 @@
   loop:
     - com.visualstudio.code
     - com.rtosta.zapzap
+    - md.obsidian.Obsidian
+    - dev.vencord.Vesktop

@@ -1,0 +1,55 @@
+---
+# Microsoft Intune Linux enrollment requires Ubuntu x86_64.
+# Supported: Ubuntu Desktop 22.04 LTS, 24.04 LTS
+
+- name: Fail if not Ubuntu x86_64
+  ansible.builtin.fail:
+    msg: >-
+      Intune enrollment requires Ubuntu (22.04/24.04) on x86_64.
+      Current system: {{ ansible_distribution }} {{ ansible_distribution_version }} ({{ ansible_architecture }})
+  when: >
+    ansible_os_family != "Debian"
+    or ansible_architecture != "x86_64"
+
+- name: Add Microsoft GPG key
+  become: true
+  ansible.builtin.shell: >
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc
+    | gpg --dearmor -o /usr/share/keyrings/microsoft.gpg
+  args:
+    creates: /usr/share/keyrings/microsoft.gpg
+
+- name: Add Microsoft prod apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/ubuntu/{{ ansible_distribution_version }}/prod {{ ansible_distribution_release }} main"
+    filename: microsoft-prod
+    state: present
+
+- name: Add Microsoft Edge apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/repos/edge stable main"
+    filename: microsoft-edge
+    state: present
+
+- name: Install Microsoft Edge
+  become: true
+  ansible.builtin.apt:
+    name: microsoft-edge-stable
+    state: present
+    update_cache: true
+
+- name: Install Intune Portal
+  become: true
+  ansible.builtin.apt:
+    name: intune-portal
+    state: present
+    update_cache: true
+
+- name: Enrollment reminder
+  ansible.builtin.debug:
+    msg: >-
+      Intune Portal and Microsoft Edge are installed. To complete enrollment,
+      open the Microsoft Intune app, sign in with your work/school account,
+      and follow the on-screen steps.
