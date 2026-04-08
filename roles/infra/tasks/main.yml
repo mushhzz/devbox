@@ -1,5 +1,6 @@
 ---
-- name: Install infrastructure tools
+# --- Fedora (all available in repos) ---
+- name: Install infrastructure tools (Fedora)
   become: true
   ansible.builtin.dnf:
     name:
@@ -7,9 +8,84 @@
       - helm
       - k9s
     state: present
+  when: ansible_os_family == "RedHat"
 
-- name: Install kubectl
+- name: Install kubectl (Fedora)
   become: true
   ansible.builtin.dnf:
     name: kubernetes-client
     state: present
+  when: ansible_os_family == "RedHat"
+
+# --- Ubuntu/Debian (need external repos) ---
+- name: Add OpenTofu repo key
+  become: true
+  ansible.builtin.shell: >
+    curl -fsSL https://get.opentofu.org/opentofu.gpg
+    | gpg --dearmor -o /usr/share/keyrings/opentofu-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/opentofu-archive-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Add OpenTofu apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/opentofu-archive-keyring.gpg] https://packages.opentofu.org/opentofu/tofu/any/ any main"
+    filename: opentofu
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add Helm repo key
+  become: true
+  ansible.builtin.shell: >
+    curl -fsSL https://baltocdn.com/helm/signing.asc
+    | gpg --dearmor -o /usr/share/keyrings/helm-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/helm-archive-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Add Helm apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/helm-archive-keyring.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+    filename: helm
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add Kubernetes repo key
+  become: true
+  ansible.builtin.shell: >
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key
+    | gpg --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Add Kubernetes apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /"
+    filename: kubernetes
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install infrastructure tools (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - tofu
+      - helm
+      - kubectl
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install k9s via go install (Ubuntu)
+  ansible.builtin.shell: >
+    go install github.com/derailed/k9s@latest
+  environment:
+    GOPATH: "{{ target_user_home }}/go"
+    PATH: "/usr/bin:{{ target_user_home }}/go/bin:{{ ansible_env.PATH }}"
+  args:
+    creates: "{{ target_user_home }}/go/bin/k9s"
+  when: ansible_os_family == "Debian"

@@ -1,4 +1,11 @@
 ---
+- name: Install Flatpak (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name: flatpak
+    state: present
+  when: ansible_os_family == "Debian"
+
 - name: Ensure Flathub remote is configured
   community.general.flatpak_remote:
     name: flathub

@@ -3,13 +3,21 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "=== Fedora Asahi Dev Laptop Bootstrap ==="
+echo "=== Dev Laptop Bootstrap ==="
 echo ""
 
 # Step 1: Install Ansible
 if ! command -v ansible-playbook &>/dev/null; then
     echo "[1/3] Installing Ansible..."
-    sudo dnf install -y ansible
+    if command -v dnf &>/dev/null; then
+        sudo dnf install -y ansible
+    elif command -v apt-get &>/dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y ansible
+    else
+        echo "Error: unsupported package manager. Install ansible manually."
+        exit 1
+    fi
 else
     echo "[1/3] Ansible already installed ($(ansible --version | head -1))"
 fi

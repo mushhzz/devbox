@@ -1,4 +1,5 @@
 ---
+# --- Fedora ---
 - name: Enable Ghostty COPR repo
   become: true
   ansible.builtin.command:
@@ -7,6 +8,7 @@
     creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:pgdev:ghostty.repo
   register: ghostty_copr
   ignore_errors: true
+  when: ansible_os_family == "RedHat"
 
 - name: Enable fallback Ghostty COPR repo
   become: true
@@ -14,14 +16,42 @@
     cmd: dnf copr enable -y scottames/ghostty
   args:
     creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:scottames:ghostty.repo
-  when: ghostty_copr is failed
+  when: ansible_os_family == "RedHat" and ghostty_copr is failed
 
-- name: Install Ghostty
+- name: Install Ghostty (Fedora)
   become: true
   ansible.builtin.dnf:
     name: ghostty
     state: present
+  when: ansible_os_family == "RedHat"
 
+# --- Ubuntu/Debian ---
+- name: Add Ghostty apt repo key
+  become: true
+  ansible.builtin.shell: >
+    curl -fsSL https://pkg.ghostty.org/pubkey.gpg
+    | gpg --dearmor -o /usr/share/keyrings/ghostty-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/ghostty-archive-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Add Ghostty apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/ghostty-archive-keyring.gpg] https://pkg.ghostty.org/apt {{ ansible_distribution_release }} main"
+    filename: ghostty
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Ghostty (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name: ghostty
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+# --- Common ---
 - name: Ensure Ghostty config directory exists
   ansible.builtin.file:
     path: "{{ target_user_home }}/.config/ghostty"

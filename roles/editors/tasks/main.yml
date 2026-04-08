@@ -1,7 +1,14 @@
 ---
+- name: Add Neovim PPA (Ubuntu)
+  become: true
+  ansible.builtin.apt_repository:
+    repo: ppa:neovim-ppa/unstable
+    state: present
+  when: ansible_os_family == "Debian"
+
 - name: Install Neovim
   become: true
-  ansible.builtin.dnf:
+  ansible.builtin.package:
     name: neovim
     state: present
 

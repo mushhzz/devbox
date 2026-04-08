@@ -1,5 +1,6 @@
 ---
-- name: Install CLI dev tools from DNF
+# --- Fedora ---
+- name: Install CLI dev tools (Fedora)
   become: true
   ansible.builtin.dnf:
     name:
@@ -14,7 +15,45 @@
       - yq
       - httpie
     state: present
+  when: ansible_os_family == "RedHat"
 
+# --- Ubuntu/Debian ---
+- name: Install CLI dev tools (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - tmux
+      - fzf
+      - ripgrep
+      - bat
+      - eza
+      - zoxide
+      - btop
+      - jq
+      - httpie
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install yq via binary (Ubuntu)
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/mikefarah/yq/releases/latest/download/yq_linux_{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+    dest: /usr/local/bin/yq
+    mode: "0755"
+  args:
+    creates: /usr/local/bin/yq
+  when: ansible_os_family == "Debian"
+
+- name: Symlink batcat to bat (Ubuntu)
+  become: true
+  ansible.builtin.file:
+    src: /usr/bin/batcat
+    dest: /usr/local/bin/bat
+    state: link
+  when: ansible_os_family == "Debian"
+  ignore_errors: true
+
+# --- Common ---
 - name: Install lazygit via go install
   ansible.builtin.shell: >
     go install github.com/jesseduffield/lazygit@latest

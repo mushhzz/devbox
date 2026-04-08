@@ -1,6 +1,6 @@
 # devbox
 
-Ansible playbook for provisioning a Fedora Asahi Remix (aarch64/Apple Silicon) development laptop from scratch.
+Ansible playbook for provisioning a development laptop from scratch. Supports **Fedora** (including Asahi Remix on Apple Silicon) and **Ubuntu**.
 
 One command takes a fresh install to a fully configured dev environment.
 
@@ -8,9 +8,9 @@ One command takes a fresh install to a fully configured dev environment.
 
 | Role | What it sets up |
 |------|----------------|
-| **base** | Build tools, RPM Fusion repos, system update |
+| **base** | Build tools, repos, system update |
 | **shell** | Zsh + Oh My Zsh + plugins (fzf-tab, autosuggestions, syntax highlighting, history search, and more) |
-| **terminal** | Ghostty terminal emulator via COPR |
+| **terminal** | Ghostty terminal emulator |
 | **git** | Git, GitHub CLI, `.gitconfig`, SSH ed25519 key generation |
 | **editors** | Neovim + VS Code (Flatpak) |
 | **languages** | Node.js (fnm), Rust (rustup), Go, Python (uv/uvx) |
@@ -20,6 +20,13 @@ One command takes a fresh install to a fully configured dev environment.
 | **devtools** | tmux, fzf, ripgrep, bat, eza, zoxide, btop, jq, yq, httpie, lazygit |
 | **ai_tools** | Claude Code, OpenCode |
 | **flatpak** | VS Code, ZapZap (WhatsApp) |
+
+## Supported platforms
+
+| Distro | Architectures | Status |
+|--------|--------------|--------|
+| Fedora 43+ | aarch64, x86_64 | Tested on Asahi Remix |
+| Ubuntu 24.04+ | aarch64, x86_64 | Supported |
 
 ## Quick start
 
@@ -63,12 +70,6 @@ All user-customizable variables live in `group_vars/all.yml` (gitignored). See `
 - **omz_plugins** — Oh My Zsh plugin list
 - **install_docker / install_aws_cli / install_gcloud / install_azure_cli** — Toggle features on/off
 - **install_claude_code / install_opencode** — AI coding tools
-
-## Requirements
-
-- Fedora 43+ (tested on Asahi Remix, aarch64)
-- Internet connection
-- sudo access
 
 ## Post-install
 

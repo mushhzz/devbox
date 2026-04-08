@@ -1,21 +1,22 @@
 ---
-- name: Add Docker CE repository
+# --- Fedora ---
+- name: Add Docker CE repository (Fedora)
   become: true
   ansible.builtin.command:
     cmd: dnf config-manager addrepo --from-repofile=https://download.docker.com/linux/fedora/docker-ce.repo
   args:
     creates: /etc/yum.repos.d/docker-ce.repo
-  when: install_docker
+  when: install_docker and ansible_os_family == "RedHat"
 
 - name: Remove podman-docker conflict package
   become: true
   ansible.builtin.dnf:
     name: podman-docker
     state: absent
-  when: install_docker
+  when: install_docker and ansible_os_family == "RedHat"
   ignore_errors: true
 
-- name: Install Docker CE
+- name: Install Docker CE (Fedora)
   become: true
   ansible.builtin.dnf:
     name:
@@ -25,9 +26,42 @@
       - docker-buildx-plugin
       - docker-compose-plugin
     state: present
-  when: install_docker
+  when: install_docker and ansible_os_family == "RedHat"
   notify: restart docker
 
+# --- Ubuntu/Debian ---
+- name: Add Docker apt repo key
+  become: true
+  ansible.builtin.shell: >
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg
+    | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/docker-archive-keyring.gpg
+  when: install_docker and ansible_os_family == "Debian"
+
+- name: Add Docker apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+    filename: docker
+    state: present
+  when: install_docker and ansible_os_family == "Debian"
+
+- name: Install Docker CE (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+  when: install_docker and ansible_os_family == "Debian"
+  notify: restart docker
+
+# --- Common ---
 - name: Enable and start Docker service
   become: true
   ansible.builtin.systemd:

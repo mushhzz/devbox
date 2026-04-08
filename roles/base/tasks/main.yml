@@ -1,4 +1,5 @@
 ---
+# --- Fedora ---
 - name: Install RPM Fusion free and nonfree repos
   become: true
   ansible.builtin.dnf:
@@ -8,15 +9,16 @@
     state: present
     disable_gpg_check: true
   ignore_errors: true
+  when: ansible_os_family == "RedHat"
 
-- name: Update all packages
+- name: Update all packages (Fedora)
   become: true
   ansible.builtin.dnf:
     name: "*"
     state: latest
-  when: run_system_update
+  when: ansible_os_family == "RedHat" and run_system_update
 
-- name: Install build essentials and core tools
+- name: Install build essentials (Fedora)
   become: true
   ansible.builtin.dnf:
     name:
@@ -36,3 +38,44 @@
       - tar
       - bzip2
     state: present
+  when: ansible_os_family == "RedHat"
+
+# --- Ubuntu/Debian ---
+- name: Update apt cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Update all packages (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    upgrade: dist
+  when: ansible_os_family == "Debian" and run_system_update
+
+- name: Install build essentials (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - gcc
+      - g++
+      - make
+      - cmake
+      - automake
+      - autoconf
+      - libssl-dev
+      - pkg-config
+      - unzip
+      - curl
+      - wget
+      - xz-utils
+      - tar
+      - bzip2
+      - software-properties-common
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+    state: present
+  when: ansible_os_family == "Debian"

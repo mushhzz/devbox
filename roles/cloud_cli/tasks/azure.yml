@@ -1,6 +1,32 @@
 ---
-- name: Install Azure CLI
+- name: Install Azure CLI (Fedora)
   become: true
   ansible.builtin.dnf:
     name: azure-cli
     state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Add Azure CLI repo key
+  become: true
+  ansible.builtin.shell: >
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc
+    | gpg --dearmor -o /usr/share/keyrings/microsoft-archive-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/microsoft-archive-keyring.gpg
+  when: ansible_os_family == "Debian"
+
+- name: Add Azure CLI apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/microsoft-archive-keyring.gpg] https://packages.microsoft.com/repos/azure-cli/ {{ ansible_distribution_release }} main"
+    filename: azure-cli
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Azure CLI (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name: azure-cli
+    state: present
+    update_cache: true
+  when: ansible_os_family == "Debian"
