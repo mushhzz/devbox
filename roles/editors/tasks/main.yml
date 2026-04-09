@@ -11,10 +11,3 @@
   ansible.builtin.package:
     name: neovim
     state: present
-
-- name: Install VS Code via Flatpak
-  community.general.flatpak:
-    name: com.visualstudio.code
-    state: present
-    method: user
-    remote: flathub
