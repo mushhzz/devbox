@@ -1,4 +1,48 @@
 ---
+# --- macOS ---
+- name: Install Neovim (macOS)
+  become: false
+  community.general.homebrew:
+    name: neovim
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Install VS Code (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: visual-studio-code
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Install JetBrains Toolbox (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: jetbrains-toolbox
+    state: present
+  when: ansible_os_family == "Darwin" and install_jetbrains_toolbox
+
+# --- Linux: JetBrains Toolbox ---
+- name: Download JetBrains Toolbox (Linux)
+  ansible.builtin.unarchive:
+    src: https://download.jetbrains.com/toolbox/jetbrains-toolbox.tar.gz
+    dest: "{{ target_user_home }}/.local/share/"
+    remote_src: true
+  when: ansible_os_family != "Darwin" and install_jetbrains_toolbox
+
+- name: Find JetBrains Toolbox binary (Linux)
+  ansible.builtin.find:
+    paths: "{{ target_user_home }}/.local/share/"
+    patterns: "jetbrains-toolbox"
+    recurse: true
+    file_type: file
+  register: jetbrains_toolbox_binary
+  when: ansible_os_family != "Darwin" and install_jetbrains_toolbox
+
+- name: Launch JetBrains Toolbox (Linux)
+  ansible.builtin.command: "{{ jetbrains_toolbox_binary.files[0].path }}"
+  when: ansible_os_family != "Darwin" and install_jetbrains_toolbox and jetbrains_toolbox_binary.files | length > 0
+
+# --- Ubuntu/Debian ---
 - name: Add Neovim PPA (Ubuntu)
   become: true
   ansible.builtin.apt_repository:
@@ -6,8 +50,18 @@
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Install Neovim
+# --- Linux ---
+- name: Install Neovim (Linux)
   become: true
   ansible.builtin.package:
     name: neovim
     state: present
+  when: ansible_os_family != "Darwin"
+
+- name: Install VS Code via Flatpak
+  community.general.flatpak:
+    name: com.visualstudio.code
+    state: present
+    method: user
+    remote: flathub
+  when: ansible_os_family != "Darwin"

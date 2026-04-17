@@ -1,0 +1,109 @@
+---
+# --- macOS: Karabiner-Elements ---
+- name: Install Karabiner-Elements (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: karabiner-elements
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Ensure Karabiner-Elements config directory exists (macOS)
+  ansible.builtin.file:
+    path: "{{ target_user_home }}/.config/karabiner"
+    state: directory
+    mode: "0755"
+  when: ansible_os_family == "Darwin"
+
+- name: Deploy Karabiner-Elements configuration (macOS)
+  ansible.builtin.template:
+    src: karabiner.json.j2
+    dest: "{{ target_user_home }}/.config/karabiner/karabiner.json"
+    mode: "0644"
+    backup: true
+  when: ansible_os_family == "Darwin"
+
+# --- Linux: keyd ---
+- name: Install keyd build dependencies
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - git
+      - gcc
+      - make
+      - systemd-devel
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install keyd build dependencies (Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - git
+      - gcc
+      - make
+      - libsystemd-dev
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Clone keyd repository
+  ansible.builtin.git:
+    repo: https://github.com/rvaiya/keyd.git
+    dest: /tmp/keyd
+    version: master
+    force: true
+  when: ansible_os_family != "Darwin"
+
+- name: Build keyd
+  ansible.builtin.command:
+    cmd: make
+    chdir: /tmp/keyd
+  changed_when: true
+  when: ansible_os_family != "Darwin"
+
+- name: Install keyd
+  become: true
+  ansible.builtin.command:
+    cmd: make install
+    chdir: /tmp/keyd
+  changed_when: true
+  when: ansible_os_family != "Darwin"
+
+- name: Clean up keyd build directory
+  ansible.builtin.file:
+    path: /tmp/keyd
+    state: absent
+  when: ansible_os_family != "Darwin"
+
+- name: Increase inotify max_user_instances for keyd
+  become: true
+  ansible.posix.sysctl:
+    name: fs.inotify.max_user_instances
+    value: "512"
+    sysctl_file: /etc/sysctl.d/99-keyd.conf
+    reload: true
+  when: ansible_os_family != "Darwin"
+
+- name: Ensure keyd config directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/keyd
+    state: directory
+    mode: "0755"
+  when: ansible_os_family != "Darwin"
+
+- name: Deploy keyd configuration
+  become: true
+  ansible.builtin.copy:
+    src: default.conf
+    dest: /etc/keyd/default.conf
+    mode: "0644"
+  notify: restart keyd
+  when: ansible_os_family != "Darwin"
+
+- name: Enable and start keyd
+  become: true
+  ansible.builtin.systemd:
+    name: keyd
+    enabled: true
+    state: started
+  when: ansible_os_family != "Darwin"

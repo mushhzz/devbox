@@ -1,4 +1,27 @@
 ---
+# --- macOS: Install apps via Homebrew casks ---
+- name: Install VS Code (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: visual-studio-code
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Install Obsidian (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: obsidian
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Install DBeaver (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: dbeaver-community
+    state: present
+  when: ansible_os_family == "Darwin"
+
+# --- Linux: Flatpak ---
 - name: Install Flatpak (Ubuntu)
   become: true
   ansible.builtin.apt:
@@ -12,6 +35,7 @@
     flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
     method: user
     state: present
+  when: ansible_os_family != "Darwin"
 
 - name: Install Flatpak applications
   community.general.flatpak:
@@ -21,7 +45,6 @@
     remote: flathub
   loop:
     - com.visualstudio.code
-    - com.rtosta.zapzap
     - md.obsidian.Obsidian
-    - dev.vencord.Vesktop
     - io.dbeaver.DBeaverCommunity
+  when: ansible_os_family != "Darwin"

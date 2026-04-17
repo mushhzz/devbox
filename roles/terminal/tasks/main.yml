@@ -1,4 +1,12 @@
 ---
+# --- macOS ---
+- name: Install Ghostty (macOS)
+  become: false
+  community.general.homebrew_cask:
+    name: ghostty
+    state: present
+  when: ansible_os_family == "Darwin"
+
 # --- Fedora ---
 - name: Enable Ghostty COPR repo
   become: true

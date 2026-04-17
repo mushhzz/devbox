@@ -1,4 +1,16 @@
 ---
+# --- macOS ---
+- name: Install Docker CLI and colima (macOS)
+  become: false
+  community.general.homebrew:
+    name:
+      - docker
+      - docker-buildx
+      - docker-compose
+      - colima
+    state: present
+  when: install_docker and ansible_os_family == "Darwin"
+
 # --- Fedora ---
 - name: Add Docker CE repository (Fedora)
   become: true
@@ -61,14 +73,14 @@
   when: install_docker and ansible_os_family == "Debian"
   notify: restart docker
 
-# --- Common ---
+# --- Linux common ---
 - name: Enable and start Docker service
   become: true
   ansible.builtin.systemd:
     name: docker
     enabled: true
     state: started
-  when: install_docker
+  when: install_docker and ansible_os_family != "Darwin"
 
 - name: Add user to docker group
   become: true
@@ -76,4 +88,4 @@
     name: "{{ target_user }}"
     groups: docker
     append: true
-  when: install_docker
+  when: install_docker and ansible_os_family != "Darwin"

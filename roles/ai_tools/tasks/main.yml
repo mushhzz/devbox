@@ -10,5 +10,13 @@
   ansible.builtin.shell: >
     curl -fsSL https://opencode.ai/install | bash
   args:
-    creates: "{{ target_user_home }}/.local/bin/opencode"
+    creates: "{{ target_user_home }}/.opencode/bin/opencode"
+  when: install_opencode
+
+- name: Symlink OpenCode into ~/.local/bin
+  ansible.builtin.file:
+    src: "{{ target_user_home }}/.opencode/bin/opencode"
+    dest: "{{ target_user_home }}/.local/bin/opencode"
+    state: link
+    force: true
   when: install_opencode

@@ -1,4 +1,13 @@
 ---
+# --- macOS ---
+- name: Install Azure CLI (macOS)
+  become: false
+  community.general.homebrew:
+    name: azure-cli
+    state: present
+  when: ansible_os_family == "Darwin"
+
+# --- Fedora ---
 - name: Install Azure CLI (Fedora)
   become: true
   ansible.builtin.dnf:
@@ -6,6 +15,7 @@
     state: present
   when: ansible_os_family == "RedHat"
 
+# --- Ubuntu/Debian ---
 - name: Add Azure CLI repo key
   become: true
   ansible.builtin.shell: >

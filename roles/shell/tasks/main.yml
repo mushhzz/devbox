@@ -1,15 +1,16 @@
 ---
-- name: Install zsh
+- name: Install zsh (Linux)
   become: true
   ansible.builtin.package:
     name: zsh
     state: present
+  when: ansible_os_family != "Darwin"
 
 - name: Set zsh as default shell
   become: true
   ansible.builtin.user:
     name: "{{ target_user }}"
-    shell: /usr/bin/zsh
+    shell: "{% if ansible_os_family == 'Darwin' %}/bin/zsh{% else %}/usr/bin/zsh{% endif %}"
 
 - name: Install Oh My Zsh
   ansible.builtin.shell: >

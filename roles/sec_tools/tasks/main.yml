@@ -1,0 +1,28 @@
+---
+- name: Install checkov via uv tool
+  ansible.builtin.shell: >
+    {{ target_user_home }}/.local/bin/uv tool install checkov
+  args:
+    creates: "{{ target_user_home }}/.local/bin/checkov"
+  when: install_sec_tools
+
+- name: Install detect-secrets via uv tool
+  ansible.builtin.shell: >
+    {{ target_user_home }}/.local/bin/uv tool install detect-secrets
+  args:
+    creates: "{{ target_user_home }}/.local/bin/detect-secrets"
+  when: install_sec_tools
+
+- name: Install policy-sentry via uv tool
+  ansible.builtin.shell: >
+    {{ target_user_home }}/.local/bin/uv tool install policy-sentry
+  args:
+    creates: "{{ target_user_home }}/.local/bin/policy_sentry"
+  when: install_sec_tools
+
+- name: Install cloudsplaining via uv tool
+  ansible.builtin.shell: >
+    {{ target_user_home }}/.local/bin/uv tool install cloudsplaining
+  args:
+    creates: "{{ target_user_home }}/.local/bin/cloudsplaining"
+  when: install_sec_tools

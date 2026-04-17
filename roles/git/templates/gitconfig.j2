@@ -1,4 +1,6 @@
 # {{ ansible_managed }}
+{% set gh_bin = '/opt/homebrew/bin/gh' if (ansible_os_family == 'Darwin' and ansible_architecture == 'arm64') else ('/usr/local/bin/gh' if ansible_os_family == 'Darwin' else '/usr/bin/gh') %}
+
 [user]
     name = {{ git_user_name }}
     email = {{ git_user_email }}
@@ -24,3 +26,11 @@
 
 [rerere]
     enabled = true
+
+[credential "https://github.com"]
+    helper =
+    helper = !{{ gh_bin }} auth git-credential
+
+[credential "https://gist.github.com"]
+    helper =
+    helper = !{{ gh_bin }} auth git-credential

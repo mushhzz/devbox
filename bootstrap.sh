@@ -9,7 +9,13 @@ echo ""
 # Step 1: Install Ansible
 if ! command -v ansible-playbook &>/dev/null; then
     echo "[1/3] Installing Ansible..."
-    if command -v dnf &>/dev/null; then
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+        if ! command -v brew &>/dev/null; then
+            echo "Installing Homebrew..."
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        fi
+        brew install ansible
+    elif command -v dnf &>/dev/null; then
         sudo dnf install -y ansible
     elif command -v apt-get &>/dev/null; then
         sudo apt-get update
@@ -28,12 +34,18 @@ ansible-galaxy collection install community.general community.crypto --force-wit
 
 # Step 3: Run the playbook
 echo "[3/3] Running playbook..."
-echo ""
-echo "You will be prompted for your sudo password."
-echo ""
+if [[ "$(uname -s)" != "Darwin" ]]; then
+    echo ""
+    echo "You will be prompted for your sudo password."
+    echo ""
+fi
 
 cd "$SCRIPT_DIR"
-ansible-playbook playbook.yml --ask-become-pass "$@"
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    ansible-playbook playbook.yml "$@"
+else
+    ansible-playbook playbook.yml --ask-become-pass "$@"
+fi
 
 echo ""
 echo "=== Done! Log out and back in for shell + group changes to take effect. ==="

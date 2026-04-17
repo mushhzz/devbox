@@ -11,6 +11,17 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
+# --- macOS Homebrew PATH ---
+{% if ansible_os_family == "Darwin" %}
+if [ -d "/opt/homebrew/bin" ]; then
+    export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+fi
+
+if [ -d "/usr/local/bin" ]; then
+    export PATH="/usr/local/bin:$PATH"
+fi
+{% endif %}
+
 # --- Plugin config ---
 
 # history-substring-search: up/down arrows search history by prefix
@@ -49,10 +60,17 @@ fi
 [ -d "$HOME/.local/bin" ] && export PATH="$HOME/.local/bin:$PATH"
 
 # Google Cloud SDK
+{% if ansible_os_family == "Darwin" %}
+if [ -f "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc" ]; then
+    source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
+    source "/opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
+fi
+{% else %}
 if [ -f "$HOME/.local/share/google-cloud-sdk/path.zsh.inc" ]; then
     source "$HOME/.local/share/google-cloud-sdk/path.zsh.inc"
     source "$HOME/.local/share/google-cloud-sdk/completion.zsh.inc"
 fi
+{% endif %}
 
 # --- Tool integrations ---
 

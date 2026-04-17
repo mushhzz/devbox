@@ -1,4 +1,15 @@
 ---
+# --- macOS ---
+- name: Install git and GitHub CLI (macOS)
+  become: false
+  community.general.homebrew:
+    name:
+      - git
+      - gh
+    state: present
+  when: ansible_os_family == "Darwin"
+
+# --- Fedora ---
 - name: Install git and GitHub CLI (Fedora)
   become: true
   ansible.builtin.dnf:
@@ -8,6 +19,7 @@
     state: present
   when: ansible_os_family == "RedHat"
 
+# --- Ubuntu/Debian ---
 - name: Add GitHub CLI apt repo key
   become: true
   ansible.builtin.shell: >
@@ -35,6 +47,7 @@
     update_cache: true
   when: ansible_os_family == "Debian"
 
+# --- Common ---
 - name: Deploy .gitconfig
   ansible.builtin.template:
     src: gitconfig.j2

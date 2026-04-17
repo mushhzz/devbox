@@ -1,5 +1,19 @@
 ---
-# --- Fedora (all available in repos) ---
+# --- macOS ---
+- name: Install infrastructure tools (macOS)
+  become: false
+  community.general.homebrew:
+    name:
+      - opentofu
+      - helm
+      - kubectl
+      - k9s
+      - kind
+      - terragrunt
+    state: present
+  when: ansible_os_family == "Darwin"
+
+# --- Fedora ---
 - name: Install infrastructure tools (Fedora)
   become: true
   ansible.builtin.dnf:
@@ -15,6 +29,24 @@
   ansible.builtin.dnf:
     name: kubernetes-client
     state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Install kind via go install (Fedora)
+  ansible.builtin.shell: >
+    go install github.com/kubernetes-sigs/kind@latest
+  environment:
+    GOPATH: "{{ target_user_home }}/go"
+    PATH: "/usr/bin:{{ target_user_home }}/go/bin:{{ ansible_env.PATH }}"
+  args:
+    creates: "{{ target_user_home }}/go/bin/kind"
+  when: ansible_os_family == "RedHat"
+
+- name: Install terragrunt (Fedora)
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/gruntwork-io/terragrunt/releases/latest/download/terragrunt_linux_{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+    dest: /usr/local/bin/terragrunt
+    mode: "0755"
   when: ansible_os_family == "RedHat"
 
 # --- Ubuntu/Debian (need external repos) ---
@@ -89,3 +121,38 @@
   args:
     creates: "{{ target_user_home }}/go/bin/k9s"
   when: ansible_os_family == "Debian"
+
+- name: Install kind via go install (Ubuntu)
+  ansible.builtin.shell: >
+    go install github.com/kubernetes-sigs/kind@latest
+  environment:
+    GOPATH: "{{ target_user_home }}/go"
+    PATH: "/usr/bin:{{ target_user_home }}/go/bin:{{ ansible_env.PATH }}"
+  args:
+    creates: "{{ target_user_home }}/go/bin/kind"
+  when: ansible_os_family == "Debian"
+
+- name: Install terragrunt (Ubuntu)
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/gruntwork-io/terragrunt/releases/latest/download/terragrunt_linux_{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+    dest: /usr/local/bin/terragrunt
+    mode: "0755"
+  when: ansible_os_family == "Debian"
+
+# --- Common ---
+- name: Create terraform symlink to tofu (macOS)
+  ansible.builtin.file:
+    src: /opt/homebrew/bin/tofu
+    dest: "{{ target_user_home }}/.local/bin/terraform"
+    state: link
+    force: true
+  when: ansible_os_family == "Darwin"
+
+- name: Create terraform symlink to tofu (Linux)
+  ansible.builtin.file:
+    src: /usr/bin/tofu
+    dest: "{{ target_user_home }}/.local/bin/terraform"
+    state: link
+    force: true
+  when: ansible_os_family != "Darwin"

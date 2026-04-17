@@ -1,5 +1,5 @@
 ---
-- name: Provision Fedora Asahi Dev Laptop
+- name: Provision Dev Laptop
   hosts: localhost
   connection: local
   gather_facts: true
@@ -8,6 +8,8 @@
   roles:
     - role: base
       tags: [base]
+    - role: keyboard
+      tags: [keyboard]
     - role: shell
       tags: [shell]
     - role: terminal
@@ -28,6 +30,9 @@
       tags: [devtools]
     - role: ai_tools
       tags: [ai_tools]
+    - role: sec_tools
+      tags: [sec_tools]
+      when: install_sec_tools
     - role: intune
       tags: [intune]
       when: install_intune

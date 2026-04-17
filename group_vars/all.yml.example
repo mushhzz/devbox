@@ -5,7 +5,7 @@ git_user_email: "CHANGEME@example.com"
 
 # === System ===
 target_user: "CHANGEME"
-target_user_home: "/home/{{ target_user }}"
+target_user_home: "{% if ansible_system == 'Darwin' %}/Users/{{ target_user }}{% else %}/home/{{ target_user }}{% endif %}"
 run_system_update: true
 
 # === Shell ===
@@ -66,3 +66,12 @@ install_intune: false
 # === AI Tools ===
 install_claude_code: true
 install_opencode: true
+
+# === Dev Tools ===
+install_ngrok: false
+
+# === Security Tools ===
+install_sec_tools: false
+
+# === Desktop Apps ===
+install_jetbrains_toolbox: false

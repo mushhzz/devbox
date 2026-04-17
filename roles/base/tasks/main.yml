@@ -1,4 +1,48 @@
 ---
+# --- macOS ---
+- name: Install Homebrew
+  ansible.builtin.shell: >
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  args:
+    creates: /opt/homebrew/bin/brew
+  when: ansible_os_family == "Darwin"
+
+- name: Add Homebrew to PATH (Apple Silicon)
+  ansible.builtin.shell: >
+    echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> {{ target_user_home }}/.zprofile
+  args:
+    creates: "{{ target_user_home }}/.zprofile"
+  when: ansible_os_family == "Darwin" and ansible_architecture == "arm64"
+
+- name: Update all packages (macOS)
+  become: false
+  community.general.homebrew:
+    update_homebrew: true
+    upgrade_all: true
+  when: ansible_os_family == "Darwin" and run_system_update
+
+- name: Install build essentials (macOS)
+  become: false
+  community.general.homebrew:
+    name:
+      - cmake
+      - automake
+      - autoconf
+      - openssl@3
+      - pkg-config
+      - curl
+      - wget
+      - xz
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Ensure Xcode Command Line Tools are installed
+  ansible.builtin.command: xcode-select --install
+  register: xcode_result
+  changed_when: "'already installed' not in xcode_result.stderr"
+  failed_when: false
+  when: ansible_os_family == "Darwin"
+
 # --- Fedora ---
 - name: Install RPM Fusion free and nonfree repos
   become: true
@@ -79,4 +123,3 @@
       - gnupg
     state: present
   when: ansible_os_family == "Debian"
-

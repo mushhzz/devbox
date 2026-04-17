@@ -1,7 +1,7 @@
 ---
-- name: restart docker
+- name: restart keyd
   become: true
   ansible.builtin.systemd:
-    name: docker
+    name: keyd
     state: restarted
   when: ansible_os_family != "Darwin"

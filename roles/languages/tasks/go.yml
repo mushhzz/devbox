@@ -1,6 +1,14 @@
 ---
-- name: Install Go
+- name: Install Go (macOS)
+  become: false
+  community.general.homebrew:
+    name: go
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Install Go (Linux)
   become: true
   ansible.builtin.package:
     name: golang
     state: present
+  when: ansible_os_family != "Darwin"

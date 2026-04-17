@@ -1,2 +1,2 @@
 # {{ ansible_managed }}
-command = /usr/bin/zsh
+command = {% if ansible_os_family == "Darwin" %}/bin/zsh{% else %}/usr/bin/zsh{% endif %}

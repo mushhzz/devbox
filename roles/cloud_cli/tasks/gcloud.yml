@@ -1,13 +1,27 @@
 ---
-- name: Download Google Cloud CLI (ARM64)
+- name: Install Google Cloud CLI (macOS)
+  become: false
+  community.general.homebrew:
+    name: google-cloud-sdk
+    state: present
+  when: ansible_os_family == "Darwin"
+
+- name: Download Google Cloud CLI (Linux ARM64)
   ansible.builtin.unarchive:
-    src: https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-arm.tar.gz
+    src: >-
+      {% if ansible_architecture == 'aarch64' -%}
+        https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-arm.tar.gz
+      {%- else -%}
+        https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-linux-x86_64.tar.gz
+      {%- endif %}
     dest: "{{ target_user_home }}/.local/share/"
     remote_src: true
     creates: "{{ target_user_home }}/.local/share/google-cloud-sdk"
+  when: ansible_os_family != "Darwin"
 
-- name: Install gcloud CLI
+- name: Install gcloud CLI (Linux)
   ansible.builtin.command:
     cmd: "{{ target_user_home }}/.local/share/google-cloud-sdk/install.sh --quiet --path-update false --command-completion false"
   args:
     creates: "{{ target_user_home }}/.local/share/google-cloud-sdk/bin/gcloud"
+  when: ansible_os_family != "Darwin"
